@@ -1,7 +1,9 @@
 package com.ckh.ssm.dao;
 
 import com.ckh.ssm.model.Department;
+import com.ckh.ssm.model.DepartmentExample;
 import com.ckh.ssm.model.Employee;
+import com.ckh.ssm.model.EmployeeExample;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +13,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -45,18 +48,33 @@ public class MapperTest {
         //1. 插入几个部门
         //Department department = new Department(null, "开发部");
 //        departmentMapper.insertSelective(new Department(null, "开发部"));
-//        departmentMapper.insertSelective(new Department(null, "测试部"));
+
+        // 测试emoji能否后正确插入
+        //departmentMapper.insertSelective(new Department(null, "UI❤部"));
 
         // 2. 插入员工
         //employeeMapper.insertSelective(new Employee(null, "ckh", "M", "123456@qq.com", 1));
 
         //3. 批量插入 使用可以批量执行操作的SQLSession
-        EmployeeMapper mapper = sqlSession.getMapper(EmployeeMapper.class);
-        for (int i = 0; i < 1000; i++) {
-            String uid = UUID.randomUUID().toString().substring(0, 5) + i;
-            mapper.insertSelective(new Employee(null, uid, "M", uid + "@ckh.com", 2));
-        }
+//        EmployeeMapper mapper = sqlSession.getMapper(EmployeeMapper.class);
+//        for (int i = 0; i < 1000; i++) {
+//            String uid = UUID.randomUUID().toString().substring(0, 5) + i;
+//            mapper.insertSelective(new Employee(null, uid, "M", uid + "@ckh.com", 2));
+//        }
+//
+//        System.out.println("批量执行完成");
 
-        System.out.println("批量执行完成");
+        List<Department> departments = departmentMapper.selectByExample(new DepartmentExample());
+        for (Department department : departments) {
+            System.out.println("department = " + department);
+        }
+    }
+
+    @Test
+    public void testEmployeeSelect() {
+        List<Employee> employees = employeeMapper.selectByExampleWithDept(new EmployeeExample());
+        for (Employee employee : employees) {
+            System.out.println("employee = " + employee);
+        }
     }
 }
