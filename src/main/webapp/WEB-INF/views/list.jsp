@@ -54,17 +54,17 @@
                     </tr>
                     <c:forEach items="${pageInfo.list}" var="emp">
                         <tr>
-                            <th>${emp.empId}</th>
-                            <th>${emp.empName}</th>
-                            <th>${emp.gender=="M" ? "男" :"女"}</th>
-                            <th>${emp.email}</th>
-                            <th>${emp.department.deptName}</th>
-                            <th>
+                            <td>${emp.empId}</td>
+                            <td>${emp.empName}</td>
+                            <td>${emp.gender=="M" ? "男" :"女"}</td>
+                            <td>${emp.email}</td>
+                            <td>${emp.department.deptName}</td>
+                            <td>
                                 <div class="btn-group btn-group-sm" role="group">
                                     <button class="btn btn-primary"><span class="glyphicon glyphicon-edit"></span>编辑</button>
                                     <button class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span>删除</button>
                                 </div>
-                            </th>
+                            </td>
                         </tr>
                     </c:forEach>
                 </table>

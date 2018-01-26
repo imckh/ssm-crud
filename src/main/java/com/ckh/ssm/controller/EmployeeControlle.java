@@ -1,6 +1,7 @@
 package com.ckh.ssm.controller;
 
 import com.ckh.ssm.model.Employee;
+import com.ckh.ssm.model.Msg;
 import com.ckh.ssm.service.EmployeeService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
@@ -26,6 +28,7 @@ public class EmployeeControlle {
      * 查询员工数据(分页查询)
      * @return
      */
+    @Deprecated
     @RequestMapping("emps")
     public String getEmps(@RequestParam(value = "pn", defaultValue = "1")Integer pn, Model model) {
         // 小于0
@@ -44,5 +47,16 @@ public class EmployeeControlle {
         model.addAttribute("pageInfo", page);
 
         return "list";
+    }
+
+    @RequestMapping("empjson")
+    @ResponseBody
+    public Msg getEmpsWithJsoon(@RequestParam(value = "pn", defaultValue = "1")Integer pn, Model model) {
+        pn = pn < 1 ? 1 : pn;
+        PageHelper.startPage(pn, 5);
+        List<Employee> employees = employeeService.getAll();
+        PageInfo page = new PageInfo(employees, 5);
+
+        return Msg.success().add("pageInfo", page);
     }
 }

@@ -17,6 +17,9 @@
     - 使用MyBatis逆向工程生成对应的bean以及mapper
 5. 测试mapper
 
+## 将页面换为json数据传输(平台为无关性)
+1. jackson-databind 导入
+
 ---
 
 ## 问题
