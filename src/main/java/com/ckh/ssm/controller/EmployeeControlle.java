@@ -28,6 +28,8 @@ public class EmployeeControlle {
      */
     @RequestMapping("emps")
     public String getEmps(@RequestParam(value = "pn", defaultValue = "1")Integer pn, Model model) {
+        // 小于0
+        pn = pn < 1 ? 1 : pn;
         // 这不是一个分页查询
         // 引入PageHelper分页插件
         // 在查询之前只需要调用, 传入页码以及分页每页的大小
