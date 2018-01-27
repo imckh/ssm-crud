@@ -35,7 +35,7 @@ public class Msg {
         return result;
     }
 
-    public Msg add(String k, PageInfo v) {
+    public Msg add(String k, Object v) {
         this.getExtend().put(k, v);
         return this;
     }

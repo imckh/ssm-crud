@@ -19,6 +19,20 @@
 
 ## 将页面换为json数据传输(平台为无关性)
 1. jackson-databind 导入
+2. controller返回包装好的实体类, jackson自动转化为json字符串
+3. jquery解析json, 将页面操作变为js
+
+## 新增
+1. jquery模态框
+2. Ajax请求department数据并展示
+3. EmpController.saveEmp()
+4. Ajax, POST员工数据至`/emp/{}`添加员工
+
+### URI
+- `/emp/{id}` GET查询员工
+- `/emp `     POST保存
+- `/emp/{id}` PUT修改员工
+- `/emp/{id}` DELETE删除员工
 
 ---
 

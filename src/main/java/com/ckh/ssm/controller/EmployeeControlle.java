@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -23,6 +24,23 @@ import java.util.List;
 public class EmployeeControlle {
     @Autowired
     EmployeeService employeeService;
+
+    /**
+     * 新增员工
+     * /emp/{id} GET查询员工
+     * /emp POST保存
+     * /emp/{id} PUT修改员工
+     * /emp/{id} DELETE删除员工
+     * @param employee 因为页面上input的name与employee中的属性一致, 所以会自动封装为Employee对象
+     * @return
+     */
+    @RequestMapping(value = "emp", method = RequestMethod.POST)
+    @ResponseBody
+    public Msg saveEmp(Employee employee) {
+        int i = employeeService.saveEmp(employee);
+
+        return Msg.success().add("changedNum", i);
+    }
 
     /**
      * 查询员工数据(分页查询)
