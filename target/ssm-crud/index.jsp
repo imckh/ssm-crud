@@ -30,7 +30,7 @@
                     <div class="form-group">
                         <label for="empNameAddInput" class="col-sm-3 control-label">emp name</label>
                         <div class="col-sm-9">
-                            <p type="text" name="empName" class="form-control-static" id="empName-update-input" placeholder="emp name">
+                            <p class="form-control-static" id="empName-update-input"></p>
                             <span class="help-block"></span>
                         </div>
                     </div>
@@ -191,6 +191,7 @@
         });
     }
 
+    // 创建员工表格
     function build_emps_table(result) {
         // 清空表格
         $('#emps_table tbody').empty();
@@ -212,6 +213,9 @@
             var editBtn = $('<button></button>').addClass('btn btn-primary edit-btn')
                 .append($('<span></span>')).addClass('glyphicon glyphicon-edit')
                 .append(' 编辑');
+            // 为编辑按钮添加自定义属性, 标识员工id
+            editBtn.attr("edit-id", item.empId);
+
             var deleteBtn = $('<button></button>').addClass('btn btn-danger delete-btn')
                 .append($('<span></span>')).addClass('glyphicon glyphicon-trash')
                 .append(' 删除');
@@ -486,16 +490,38 @@
         });
     });
 
+    // 因为编辑按钮是在页面加载出来以后动态生成的, 所以这里要用这样的方法绑定
     // 编辑按钮绑定事件
     $(document).on('click', '.edit-btn', function () {
         // 查出部门信息, 并显示部门列表
         getDepts($('#empUpdateModal select'));
+
         // 查出员工信息, 并显示
+        getEmp($(this).attr("edit-id"));
+
         // 淡出模态框
         $('#empUpdateModal').modal({
             backdrop: 'static'
         });
     });
+    
+    function getEmp(id) {
+        $.ajax({
+            url:"${APP_PATH}/emp/" + id,
+            type:"GET",
+            success:function (result) {
+                // 显示员工数据
+                var empData = result.extend.emp;
+                $("#empName-update-input").text(empData.empName);
+                $("#email-update-input").val(empData.email);
+                // 更改单选框 http://jquery.cuishifeng.cn/val.html
+                $("#empUpdateModal input[name='gender']").val([empData.gender]);
+                // 下拉列表
+                $("#empUpdateModal select").val([empData.dId]);
+
+            }
+        });
+    }
 </script>
 </body>
 </html>

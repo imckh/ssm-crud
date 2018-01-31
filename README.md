@@ -57,7 +57,9 @@
     1. 创建按钮的时候绑定事件
     2. 用live()绑定单击事件, (jquery新版删除掉live()函数了)
     3. 替换为on()函数
-
+3. 后台加入相应方法 /emp/{id}
+4. 取出每个员工的id的办法为在生成时把员工的id信息保存到button的dom元素中去, 取的时候方便查找员工的信息
+5. jquery中[val()函数的用法](http://jquery.cuishifeng.cn/val.html)
 ---
 
 ## 问题
@@ -76,3 +78,4 @@
 缺少maven包, `taglibs-standard-impl`, `jstl-api`
 
 ### 新增用户校验问题
+1. 有些数据是直接保存在dom标签属性中的, 正常的用户是不会关注的, 那么更改了这些信息是否会影响程序错误呢?

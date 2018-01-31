@@ -53,4 +53,14 @@ public class EmployeeService {
 
         return employeeMapper.countByExample(example) == 0;
     }
+
+    /**
+     * 查询员工
+     * @param id 员工ID
+     * @return
+     */
+    public Employee getEmp(Integer id) {
+        // 这里只需要带上部门ID, 不需要部门详细信息
+        return employeeMapper.selectByPrimaryKey(id);
+    }
 }

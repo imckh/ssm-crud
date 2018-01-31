@@ -10,10 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.HashMap;
@@ -29,6 +26,21 @@ import java.util.Map;
 public class EmployeeControlle {
     @Autowired
     EmployeeService employeeService;
+
+    /**
+     * 查询单个ID
+     * GET请求员工ID
+     * //@PathVariable("id")表示从路径中取出id
+     * @param id 要查询的员工ID
+     * @return
+     */
+    @RequestMapping(value = "/emp/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public Msg getEmp(@PathVariable("id") Integer id) {
+        Employee e = employeeService.getEmp(id);
+
+        return Msg.success().add("emp", e);
+    }
 
     /**
      * 检查用户名是否可用
