@@ -5,6 +5,8 @@
 <configuration>
     <settings>
         <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--log4j打印sql语句-->
+        <setting name="logImpl" value="LOG4J2" />
     </settings>
     <typeAliases>
         <package name="com.ckh.ssm.bean" />

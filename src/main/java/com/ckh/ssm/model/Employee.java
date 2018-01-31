@@ -1,12 +1,20 @@
 package com.ckh.ssm.model;
 
+import javax.validation.constraints.Pattern;
+
 public class Employee {
     private Integer empId;
 
+    // 正则表达式的验证, 以及提示消息
+    @Pattern(regexp = "^.{2,16}$", message = "用户名必须是2-16位")
     private String empName;
 
     private String gender;
 
+//    @Email
+    // \u4e00 在java中也可以一个\
+    @Pattern(regexp = "^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]{2,6})+$",
+            message = "邮箱格式不对")
     private String email;
 
     private Integer dId;

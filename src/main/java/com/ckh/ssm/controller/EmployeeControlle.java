@@ -8,12 +8,17 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 2018/1/24 20:14
@@ -26,20 +31,67 @@ public class EmployeeControlle {
     EmployeeService employeeService;
 
     /**
+     * 检查用户名是否可用
+     * @param empName
+     * @return
+     */
+    @RequestMapping("/checkuser")
+    @ResponseBody
+    // 明确表示要取出从页面传来的数据中取出'empName'的值
+    public Msg checkUser(@RequestParam("empName") String empName) {
+        // 先判断用户名是不是合法表达式
+        //用户名正则，4到16位（字母，数字，下划线，减号）汉字
+        //var regName = "(^[a-zA-Z0-9_-]{4,16}$)|(^[\u2E80-\u9FFF]{2,5}$)";
+        // 用户想怎么起怎么起 , 只限制长度
+        String  regName = "^.{2,16}$";
+        if (!empName.matches(regName)) {
+            return Msg.fail().add("validate_msg", "用户名必须是2-16位");
+        }
+
+        // 数据库校验
+        boolean b = employeeService.checkUser(empName);
+
+        if (b) {
+            return Msg.success();
+        } else {
+            return Msg.fail().add("validate_msg", "用户名不可用");
+        }
+    }
+
+    /**
      * 新增员工
      * /emp/{id} GET查询员工
      * /emp POST保存
      * /emp/{id} PUT修改员工
      * /emp/{id} DELETE删除员工
+     *
+     * 校验
+     * 1. 支持JSR303校验
+     * 2. 导入Hibernate-Validator
+     *
      * @param employee 因为页面上input的name与employee中的属性一致, 所以会自动封装为Employee对象
      * @return
      */
     @RequestMapping(value = "emp", method = RequestMethod.POST)
     @ResponseBody
-    public Msg saveEmp(Employee employee) {
-        int i = employeeService.saveEmp(employee);
+    public Msg saveEmp(@Valid Employee employee, BindingResult result) {
+        if (result.hasErrors()) {
+            // 校验失败, 应该返回失败, 在模态框中显示检验失败的错误信息
+            Map<String, Object> map = new HashMap<>();
+            List<FieldError> fieldErrors = result.getFieldErrors();
 
-        return Msg.success().add("changedNum", i);
+            for (FieldError fieldError : fieldErrors) {
+                System.out.println(fieldError);
+                System.out.println("错误字段名:" + fieldError.getField());
+                System.out.println("错误信息" + fieldError.getDefaultMessage());
+                map.put(fieldError.getField(), fieldError.getDefaultMessage());
+            }
+
+            return Msg.fail().add("errorFields", map);
+        } else {
+            int i = employeeService.saveEmp(employee);
+            return Msg.success().add("changedNum", i);
+        }
     }
 
     /**

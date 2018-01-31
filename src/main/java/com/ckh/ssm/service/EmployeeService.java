@@ -2,6 +2,7 @@ package com.ckh.ssm.service;
 
 import com.ckh.ssm.dao.EmployeeMapper;
 import com.ckh.ssm.model.Employee;
+import com.ckh.ssm.model.EmployeeExample;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,11 @@ public class EmployeeService {
      * @return
      */
     public List<Employee> getAll() {
-        return employeeMapper.selectByExampleWithDept(null);
+        // 添加order by emp_id
+        EmployeeExample example = new EmployeeExample();
+        example.setOrderByClause("`emp_id`");
+
+        return employeeMapper.selectByExampleWithDept(example);
     }
 
     /**
@@ -33,5 +38,19 @@ public class EmployeeService {
     public int saveEmp(Employee employee) {
 
         return employeeMapper.insertSelective(employee);
+    }
+
+    /**
+     * 检查用户名是否重复
+     * (复杂查询的使用XxxExample)
+     * @param empName 用户名
+     * @return Boolean true代表当前姓名可用
+     */
+    public boolean checkUser(String empName) {
+        EmployeeExample example = new EmployeeExample();
+        EmployeeExample.Criteria criteria = example.createCriteria();
+        criteria.andEmpNameEqualTo(empName);
+
+        return employeeMapper.countByExample(example) == 0;
     }
 }
