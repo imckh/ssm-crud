@@ -28,6 +28,41 @@ public class EmployeeControlle {
     EmployeeService employeeService;
 
     /**
+     * 如果直接发送PUT的Ajax请求, 封装的数据直接除了id全是null
+     * 但是请求体(form data)中有数据,但是employee封装不上
+     *
+     * 原因:
+     *  tomcat, 将请求体中的数据封装一个map, 并不能从request.getParameter中得到数据
+     *      request.getParameter("empName)就将从这个map中取值
+     *      springMVC封装POJO对象的时候, 会将POJO每个属性的值通过request.getParameter("empName)找到
+     *
+     *  ajax的PUT请求不能直接发
+     *      请求体中的数据request.getParamete拿不到数据,
+     *      因为Tomcat一看是PUT就不会封装请求体为map, 只有post才会封装为map
+     *
+     *  org.apache.catalina.connector.Request.parseParameters(); 3111行
+     *  只有POST请求才会执行后续的代码 继续往下解析
+     *
+     *  我们需要能直接支持发送PUT之类的请求, 还要封装请求体中的数据
+     *  配置上HiddenHttpMethodFilter
+     *  的作用是将请求体中的数据解析并包装成一个Map, request被重新包装
+     *  request.getParameter()被重写, 就会从自己的封装体中取出数据
+     *
+     * 员工更新方法
+     * @param employee
+     * @return
+     */
+    @RequestMapping(value = "/emp/{empId}", method = RequestMethod.PUT)
+    @ResponseBody
+    public Msg updateEmp(Employee employee) {
+        // If the BATCH executor is in use, the update counts are being lost.
+        int i = employeeService.updateEmp(employee);
+//        if (i > 0)
+            return Msg.success().add("updatesNum", i);
+//        return Msg.fail().add("updatesNum", i);
+    }
+
+    /**
      * 查询单个ID
      * GET请求员工ID
      * //@PathVariable("id")表示从路径中取出id

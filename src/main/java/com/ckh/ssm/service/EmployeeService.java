@@ -63,4 +63,12 @@ public class EmployeeService {
         // 这里只需要带上部门ID, 不需要部门详细信息
         return employeeMapper.selectByPrimaryKey(id);
     }
+
+    /**
+     * 员工更新
+     * @param employee
+     */
+    public int updateEmp(Employee employee) {
+        return employeeMapper.updateByPrimaryKeySelective(employee);
+    }
 }

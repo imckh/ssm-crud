@@ -70,7 +70,6 @@
     </div>
 </div>
 
-
 <!-- 员工添加模态框Modal -->
 <div class="modal fade" id="empAddModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
@@ -167,8 +166,9 @@
         <div class="col-md-6" id="page_nav"></div>
     </div>
 </div>
+
 <script type="text/javascript">
-    var totalRecord;
+    var totalRecord, currentPage;
 
     <%--页面加载完成以后, 直接去发送一个ajax请求, 得到分页数据--%>
     $(function(){
@@ -243,6 +243,7 @@
         $('#page_info').append('当前第' + result.extend.pageInfo.pageNum + '页, 总共' + result.extend.pageInfo.pages + '页, 总共' + result.extend.pageInfo.total + '条记录');
 
         totalRecord = result.extend.pageInfo.total;
+        currentPage = result.extend.pageInfo.pageNum;
     }
 
     // 分页条, 点击分页能去相应页面
@@ -499,12 +500,16 @@
         // 查出员工信息, 并显示
         getEmp($(this).attr("edit-id"));
 
+        // 传递员工id传递给模态框的更新按钮
+        $('#emp_update_btn').attr('edit-id', $(this).attr('edit-id'));
+
         // 淡出模态框
         $('#empUpdateModal').modal({
             backdrop: 'static'
         });
     });
-    
+
+    // 查询员工信息
     function getEmp(id) {
         $.ajax({
             url:"${APP_PATH}/emp/" + id,
@@ -518,10 +523,39 @@
                 $("#empUpdateModal input[name='gender']").val([empData.gender]);
                 // 下拉列表
                 $("#empUpdateModal select").val([empData.dId]);
-
             }
         });
     }
+
+    // 点击更新, 更新员工信息
+    $("#emp_update_btn").click(function () {
+        // 1. 校验邮箱
+        var emailEle = $('#email-update-input');
+        if (!validate_add_form_email(emailEle)) {
+            show_validate_msg(emailEle, 'error', '邮箱格式不对');
+            return false;
+        } else {
+            show_validate_msg(emailEle, 'success', '');
+        }
+
+        // 2. 发送Ajax请求, 更新员工
+        $.ajax({
+            url:'${APP_PATH}/emp/' + $(this).attr('edit-id'),
+//            一个是使用HiddenHttpMethodFilter过滤器, 发送的是post请求,但是在data中要带上"&_method=PUT"
+//            由HiddenHttpMethodFilter过滤器转为PUT
+//            type:'POST',
+//            data:$('#empUpdateModal form').serialize() + "&_method=PUT",
+//            另一个是使用HttpPutFormContentFilter过滤器, 可以直接使用PUT请求
+            type:'PUT',
+            data:$('#empUpdateModal form').serialize(),
+            success:function (result) {
+                //1. 关闭对话框
+                $('#empUpdateModal').modal('hide');
+                // 2. 回到本页面
+                to_page(currentPage);
+            }
+        });
+    });
 </script>
 </body>
 </html>

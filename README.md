@@ -60,6 +60,14 @@
 3. 后台加入相应方法 /emp/{id}
 4. 取出每个员工的id的办法为在生成时把员工的id信息保存到button的dom元素中去, 取的时候方便查找员工的信息
 5. jquery中[val()函数的用法](http://jquery.cuishifeng.cn/val.html)
+6. 方法1, 使用过滤器使用Rest风格的URI 将页面普通的post请求转为指定的delete或put请求`web.xml`中`HiddenHttpMethodFilter` **在data中加一个&_method=PUT**
+7. 方法2, 使用Ajax.PUT  解决put请求传不到数据问题
+    > 在web.xml中配置`org.springframework.web.filter.HttpPutFormContentFilter`过滤器<br>
+    我们需要能直接支持发送PUT之类的请求, 还要封装请求体中的数据<br>
+    配置上HiddenHttpMethodFilter<br>
+    的作用是将请求体中的数据解析并包装成一个Map, request被重新包装<br>
+    request.getParameter()被重写, 就会从自己的封装体中取出数据
+
 ---
 
 ## 问题
@@ -79,3 +87,23 @@
 
 ### 新增用户校验问题
 1. 有些数据是直接保存在dom标签属性中的, 正常的用户是不会关注的, 那么更改了这些信息是否会影响程序错误呢?
+
+### 更新时
+1. Request method 'POST' not supported `POST http://localhost:8080/ssmcrud/emp/1 405 ()`
+2. update操作不返回行数 而是返回-21455221的一个负数
+    > 对于mybatis的update、insert的操作，操作成功后会得到一个int类型的影响结果条数，直接在dao层返回就可以得到，可以通过这个返回值做成功与否的操作。
+    <br>但是，mybatis官方的讨论列表，这句很关键：“If the BATCH executor is in use, the update counts are being lost. ”  会导致返回为-2147482646，而不是正确就返回条数，失败就返回0
+    <br>一般我们都会开启batch的批量操作，所以建议不要通过影响条数进行结果判断
+    <br>[参考链接CSDN](http://blog.csdn.net/Mos_wen/article/details/51361078)
+3. 如果直接发送PUT的Ajax请求, 封装的数据直接除了id全是null 但是请求体(form data)中有数据,但是employee封装不上
+    > 原因:
+    tomcat, 将请求体中的数据封装一个map, 并不能从`request.getParameter`中得到数据 <br>
+        `request.getParameter("empName)`就将从这个map中取值<br>
+        springMVC封装POJO对象的时候, 会将POJO每个属性的值通过`request.getParameter("empName)`找到
+
+    > ajax的PUT请求不能直接发 <br>
+        请求体中的数据`request.getParamete`拿不到数据,<br>
+        因为Tomcat一看是PUT就不会封装请求体为map, 只有post才会封装为map
+
+    > `org.apache.catalina.connector.Request.parseParameters()`; 3111行<br>
+    只有POST请求才会执行后续的代码 继续往下解析
