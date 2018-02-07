@@ -68,6 +68,17 @@
     的作用是将请求体中的数据解析并包装成一个Map, request被重新包装<br>
     request.getParameter()被重写, 就会从自己的封装体中取出数据
 
+## 删除/批量删除
+1. 全选,全不选
+    - 构造EmployeeExample来删除
+    - 批量/单个 合成一个方法
+    > attr()获取checked是 undefined, 因为当时定义选择框的时候并没有定义checked属性, 所以这些dom原生属性用prop获取, 而用attr获取自定义属性的值
+2. 单选(包括选中了全部全选复选框也要相应的改变)
+    - URI: /emp/{id} method=DELETE
+    - 删除按钮加一个del-id的属性
+    - 点击删除的时候找到id
+    > 若选中的选择框的个数==所有选择框的个数
+
 ---
 
 ## 问题

@@ -135,7 +135,7 @@
     <div class="row">
         <div class="col-md-4 col-md-offset-8">
             <button class="btn btn-primary" id="empAddBtn">新增</button>
-            <button class="btn btn-danger">删除</button>
+            <button class="btn btn-danger" id="empDelAllBtn">删除</button>
         </div>
     </div>
     <%--显示表格数据--%>
@@ -144,6 +144,7 @@
             <table class="table table-hover" id="emps_table">
                 <thead>
                     <tr>
+                        <th><input type="checkbox" id="check-all"></th>
                         <th>#</th>
                         <th>empName</th>
                         <th>gender</th>
@@ -198,6 +199,7 @@
 
         var emps = result.extend.pageInfo.list;
         $.each(emps, function (index, item) {
+            var checkBoxTd = $("<td></td>").append($('<input type="checkbox" class="check-item">'));
             var empIdTd = $("<td></td>").append(item.empId);
             var empNameTd = $("<td></td>").append(item.empName);
             var empGenderTd = $("<td></td>").append(item.gender === 'M' ? '男' : '女');
@@ -219,12 +221,16 @@
             var deleteBtn = $('<button></button>').addClass('btn btn-danger delete-btn')
                 .append($('<span></span>')).addClass('glyphicon glyphicon-trash')
                 .append(' 删除');
+            // 为删除按钮添加自定义属性, 标识员工id
+            deleteBtn.attr("del-id", item.empId);
+
             var btnGroup = $('<div></div>').addClass('btn-group btn-group-sm').attr('role', 'group')
                 .append(editBtn).append(deleteBtn);
             var empBtnGroupTd = $("<td></td>").append(btnGroup);
 
             // append方法执行完以后还是返回原来的元素
             $("<tr></tr>")
+                .append(checkBoxTd)
                 .append(empIdTd)
                 .append(empNameTd)
                 .append(empGenderTd)
@@ -491,24 +497,6 @@
         });
     });
 
-    // 因为编辑按钮是在页面加载出来以后动态生成的, 所以这里要用这样的方法绑定
-    // 编辑按钮绑定事件
-    $(document).on('click', '.edit-btn', function () {
-        // 查出部门信息, 并显示部门列表
-        getDepts($('#empUpdateModal select'));
-
-        // 查出员工信息, 并显示
-        getEmp($(this).attr("edit-id"));
-
-        // 传递员工id传递给模态框的更新按钮
-        $('#emp_update_btn').attr('edit-id', $(this).attr('edit-id'));
-
-        // 淡出模态框
-        $('#empUpdateModal').modal({
-            backdrop: 'static'
-        });
-    });
-
     // 查询员工信息
     function getEmp(id) {
         $.ajax({
@@ -555,6 +543,97 @@
                 to_page(currentPage);
             }
         });
+    });
+
+    // 单个删除按钮绑定事件
+    $(document).on('click', '.delete-btn', function () {
+        //1. 弹出确认删除对话框
+        // 拿到祖先的id
+        var empName = $(this).parents('tr').find('td:eq(2)').text();
+        var empId = $(this).attr("del-id");
+        if (confirm('确认删除[' + empName + ']?')) {
+            // 确认, 发送Ajax请求删除
+            $.ajax({
+                url:'${APP_PATH}/emp/' + empId,
+                type:'DELETE',
+                success:function (result) {
+                    // 回到当前页
+                    to_page(currentPage);
+                }
+            });
+        }
+    });
+
+    // 因为编辑按钮是在页面加载出来以后动态生成的, 所以这里要用这样的方法绑定
+    // 编辑按钮绑定事件
+    $(document).on('click', '.edit-btn', function () {
+        // 查出部门信息, 并显示部门列表
+        getDepts($('#empUpdateModal select'));
+
+        // 查出员工信息, 并显示
+        getEmp($(this).attr("edit-id"));
+
+        // 传递员工id传递给模态框的更新按钮
+        $('#emp_update_btn').attr('edit-id', $(this).attr('edit-id'));
+
+        // 淡出模态框
+        $('#empUpdateModal').modal({
+            backdrop: 'static'
+        });
+    });
+
+    // 全选//全不选
+    $('#check-all').click(function () {
+        // attr()获取checked是 undefined
+        // 因为当时定义选择框的时候并没有定义checked属性
+        // 所以这些dom原生属性用prop获取, 而用attr获取自定义属性的值
+        // alert($(this).prop('checked'));
+        $('.check-item').prop('checked', $(this).prop('checked'));
+    });
+
+    //单选(包括选中了全部全选复选框也要相应的改变)
+    $(document).on('click', '.check-item', function (){
+        // 判断当前选中的元素 是不是当前页的size
+        // 匹配选中的选择框 (若选中的选择框的个数==所有选择框的个数)
+        var isAllChecked = $('.check-item').length == $('.check-item:checked').length;
+
+        //alert(checkedNum);
+        if (isAllChecked) {
+            $('#check-all').prop('checked', true);
+        } else {
+            $('#check-all').prop('checked', false);
+        }
+    });
+
+    // 点击全部删除, 批量删除
+    $('#empDelAllBtn').click(function () {
+        // 展示将要删除的员工姓名, 遍历所有选中的
+        var empNames = '';
+        var delIds = '';
+        $.each($('.check-item:checked'), function () {
+            // 第三个<td>
+            var curEmpName = $(this).parents('tr').find('td:eq(2)').text() + ',';
+            empNames += curEmpName;
+
+            // 组装员工id字符串
+            delIds += $(this).parents('tr').find('td:eq(1)').text() + '-';
+        });
+
+        // 去除最后一个符号
+        empNames = empNames.substring(0, empNames.length - 1);
+        delIds = delIds.substring(0, delIds.length - 1);
+
+        if (confirm('确认删除[' + empNames + ']?')) {
+            $.ajax({
+                url:'${APP_PATH}/emp/' + delIds,
+                type:'DELETE',
+                success:function (result) {
+                    alert(result.msg);
+
+                    to_page(currentPage);
+                }
+            });
+        }
     });
 </script>
 </body>

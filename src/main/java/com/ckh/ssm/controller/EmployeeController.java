@@ -13,9 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 2018/1/24 20:14
@@ -23,9 +21,44 @@ import java.util.Map;
  * 处理员工CRUD请求
  */
 @Controller
-public class EmployeeControlle {
+public class EmployeeController {
     @Autowired
     EmployeeService employeeService;
+
+    /**
+     * 删除单个员工
+     * 单个批量都能用
+     * 批量(1-2-3)
+     * 单个(1)
+     * @param id 员工ID
+     * @return 自定义封装好的message对象
+     */
+    @ResponseBody
+    @RequestMapping(value = "/emp/{ids}", method = RequestMethod.DELETE)
+    public Msg deleteEmpById(@PathVariable("ids") String ids) {
+        if (ids.contains("-")) {
+            List<Integer> delIds = new ArrayList<>();
+
+            // 批量删除
+            String[] strIds = ids.split("-");
+
+            // 组装id集合
+            for (String id : strIds) {
+                delIds.add(Integer.parseInt(id));
+            }
+
+            employeeService.deleteBatch(delIds);
+
+        } else {
+            //单个删除
+            int id = Integer.parseInt(ids);
+            employeeService.deleteEmp(id);
+        }
+
+
+        return Msg.success();
+    }
+
 
     /**
      * 如果直接发送PUT的Ajax请求, 封装的数据直接除了id全是null
@@ -50,7 +83,7 @@ public class EmployeeControlle {
      *
      * 员工更新方法
      * @param employee
-     * @return
+     * @return 自定义封装好的message对象
      */
     @RequestMapping(value = "/emp/{empId}", method = RequestMethod.PUT)
     @ResponseBody
@@ -67,7 +100,7 @@ public class EmployeeControlle {
      * GET请求员工ID
      * //@PathVariable("id")表示从路径中取出id
      * @param id 要查询的员工ID
-     * @return
+     * @return 自定义封装好的message对象
      */
     @RequestMapping(value = "/emp/{id}", method = RequestMethod.GET)
     @ResponseBody
@@ -80,14 +113,14 @@ public class EmployeeControlle {
     /**
      * 检查用户名是否可用
      * @param empName
-     * @return
+     * @return 自定义封装好的message对象
      */
     @RequestMapping("/checkuser")
     @ResponseBody
     // 明确表示要取出从页面传来的数据中取出'empName'的值
     public Msg checkUser(@RequestParam("empName") String empName) {
         // 先判断用户名是不是合法表达式
-        //用户名正则，4到16位（字母，数字，下划线，减号）汉字
+        //用户名正则,4到16位（字母，数字，下划线，减号）汉字
         //var regName = "(^[a-zA-Z0-9_-]{4,16}$)|(^[\u2E80-\u9FFF]{2,5}$)";
         // 用户想怎么起怎么起 , 只限制长度
         String  regName = "^.{2,16}$";
@@ -117,7 +150,7 @@ public class EmployeeControlle {
      * 2. 导入Hibernate-Validator
      *
      * @param employee 因为页面上input的name与employee中的属性一致, 所以会自动封装为Employee对象
-     * @return
+     * @return 自定义封装好的message对象
      */
     @RequestMapping(value = "emp", method = RequestMethod.POST)
     @ResponseBody
@@ -143,7 +176,7 @@ public class EmployeeControlle {
 
     /**
      * 查询员工数据(分页查询)
-     * @return
+     * @return 自定义封装好的message对象
      */
     @Deprecated
     @RequestMapping("emps")
@@ -166,6 +199,12 @@ public class EmployeeControlle {
         return "list";
     }
 
+    /**
+     * 以Json的形式查询员工
+     * @param pn 第几页
+     * @param model
+     * @return 自定义封装好的message对象
+     */
     @RequestMapping("empjson")
     @ResponseBody
     public Msg getEmpsWithJsoon(@RequestParam(value = "pn", defaultValue = "1")Integer pn, Model model) {
